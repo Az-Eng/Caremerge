@@ -1,6 +1,7 @@
 const http = require('http');
 const url = require('url')
 const { getTitles, makeHtmlResponse } = require('./utils/functions')
+const { getTitlesAsync, makeHtmlResponseAsync } = require('./utils/functions')
 
 
 //create a server object:
@@ -27,6 +28,29 @@ http.createServer((req, res) => {
             } else {
                 // to get the html 
                 makeHtmlResponse(titles, (resToWrite) => {
+                    res.write(resToWrite); //write a response
+                    res.end(); //end the response
+                })
+            }
+        })
+
+    } else if (path === '/Async/I/want/title' || path === '/Async/I/want/title/') {
+
+        // if no address is given
+        if (!queryObj.address) {
+            res.write('Please provide some valid address')
+            res.end()
+            return
+        }
+        // get the HTML titles of given addresses
+        getTitlesAsync(queryObj.address, (error, titles) => {
+
+            if (error) {
+                res.write('Something Went wrong - try again')
+                res.end()
+            } else {
+                // to get the html 
+                makeHtmlResponseAsync(titles, (resToWrite) => {
                     res.write(resToWrite); //write a response
                     res.end(); //end the response
                 })

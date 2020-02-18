@@ -1,3 +1,4 @@
+const async = require('async')
 const scrapTitle = require('./scraptitle')
 
 
@@ -40,6 +41,7 @@ const getTitles = (addresses, callback) => {
 
 // use the titles array and create html response to send back
 const makeHtmlResponse = (titles, callback) => {
+
     var resToSend = '<html><head></head><body><h1> Following are the titles of given websites: </h1><ul>'
     var counter = titles.length
     titles.forEach(title => {
@@ -57,7 +59,60 @@ const makeHtmlResponse = (titles, callback) => {
 }
 
 
+const getTitlesAsync = (addresses, callback) => {
+
+    // if single address is given in query string convert it to array
+    if (!Array.isArray(addresses)) {
+        addresses = Array(addresses)
+    }
+
+    if (!addresses || addresses.length === 0) {
+        callback("Please enter valid addresses", undefined)
+        return
+    }
+
+    var titlesArray = []
+    async.forEachSeries(addresses, (address, callback) => {
+
+        scrapTitle(address, (title) => {
+            titlesArray.push(title)
+            callback();
+        })
+
+    }, (err) => {
+        // if any error occur
+        if (err) {
+            console.log('Something went wrong');
+            callback('Something went wrong', undefined)
+        } else {
+            console.log('All titles have been processed successfully');
+            callback(undefined, titlesArray)
+        }
+    });
+
+}
+
+const makeHtmlResponseAsync = (titles, callback) => {
+
+    var resToSend = '<html><head></head><body><h1> Following are the titles of given websites: </h1><ul>'
+
+    async.forEachSeries(titles, (title, callback) => {
+
+        resToSend = resToSend + '<li>' + title + '</li>'
+        callback()
+
+    }, () => {
+        resToSend = resToSend + '</ul></body></html>'
+        console.log('Html Processed successfully');
+        callback(resToSend)
+
+    });
+
+}
+
 module.exports = {
     getTitles,
-    makeHtmlResponse
+    makeHtmlResponse,
+    getTitlesAsync,
+    makeHtmlResponseAsync
 }
