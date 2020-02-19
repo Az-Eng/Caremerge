@@ -5,6 +5,8 @@ const { getTitlesAsync, makeHtmlResponseAsync } = require('./utils/functions')
 const { getTitlesPromises } = require('./utils/functions')
 
 
+const port = process.env.PORT || 3000
+
 //create a server object:
 http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/html' }); // http header
@@ -87,7 +89,7 @@ http.createServer((req, res) => {
         res.end(); //end the response
     }
 
-}).listen(3000, function () {
-    console.log("server start at port 3000"); //the server object listens on port 3000
+}).listen(port, function () {
+    console.log("server start at port" + port); //the server object listens on port 3000
 });
 
