@@ -2,6 +2,7 @@ const http = require('http');
 const url = require('url')
 const { getTitles, makeHtmlResponse } = require('./utils/functions')
 const { getTitlesAsync, makeHtmlResponseAsync } = require('./utils/functions')
+const { getTitlesPromises } = require('./utils/functions')
 
 
 //create a server object:
@@ -28,6 +29,7 @@ http.createServer((req, res) => {
             } else {
                 // to get the html 
                 makeHtmlResponse(titles, (resToWrite) => {
+                    console.log('recieving response on server using raw node and http')
                     res.write(resToWrite); //write a response
                     res.end(); //end the response
                 })
@@ -51,11 +53,34 @@ http.createServer((req, res) => {
             } else {
                 // to get the html 
                 makeHtmlResponseAsync(titles, (resToWrite) => {
+                    console.log('recieving respopnse using Async')
                     res.write(resToWrite); //write a response
                     res.end(); //end the response
                 })
             }
         })
+
+    } else if (path === '/Promises/I/want/title' || path === '/Promises/I/want/title/') {
+
+        // if no address is given
+        if (!queryObj.address) {
+            res.write('Please provide some valid address')
+            res.end()
+            return
+        }
+
+        // get the HTML titles of given addresses with promises way
+        getTitlesPromises(queryObj.address).then((resToWrite) => {
+            console.log('recieving response on server with promises...')
+            console.log(resToWrite)
+            res.write(resToWrite)
+            res.end()
+        }).catch((err) => {
+            console.log(err)
+            res.write('Something went wrong!')
+            res.end()
+        })
+
 
     } else {
         res.write('<h1>404 page<h1>'); //write a response

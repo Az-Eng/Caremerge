@@ -1,7 +1,7 @@
 const helper = require('./utils/functions')
 
 
-addresses = ['ada']
+addresses = ["https://hntechs.com", "https://google.com", "https://youtube.com", "https://facebook.com"]
 
 
 

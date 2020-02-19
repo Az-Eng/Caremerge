@@ -1,5 +1,6 @@
 const async = require('async')
-const scrapTitle = require('./scraptitle')
+const RSVP = require('rsvp')
+const { scrapTitle, scrapTitlePromises } = require('./scraptitle')
 
 
 const getTitles = (addresses, callback) => {
@@ -58,7 +59,7 @@ const makeHtmlResponse = (titles, callback) => {
     });
 }
 
-
+// with Async
 const getTitlesAsync = (addresses, callback) => {
 
     // if single address is given in query string convert it to array
@@ -92,6 +93,7 @@ const getTitlesAsync = (addresses, callback) => {
 
 }
 
+// with Async
 const makeHtmlResponseAsync = (titles, callback) => {
 
     var resToSend = '<html><head></head><body><h1> Following are the titles of given websites: </h1><ul>'
@@ -110,9 +112,73 @@ const makeHtmlResponseAsync = (titles, callback) => {
 
 }
 
+// with promises
+const getTitlesPromises = (addresses) => {
+
+    const promise = new RSVP.Promise(function (resolve, reject) {
+
+        // if single address is given in query string convert it to array
+        if (!Array.isArray(addresses)) {
+            addresses = Array(addresses)
+        }
+
+        // if no address is given or call with empty array
+        if (!addresses || addresses.length === 0) {
+            reject("No address is given")
+            return
+        }
+
+        // iterate on each address to get the html title of web page
+        const TitlesPromises = addresses.map(function (address) {
+            return scrapTitlePromises(address)
+        })
+
+        // once all titles are resolved make an html response
+        RSVP.all(TitlesPromises).then(function (titles) {
+            makeHtmlResponsePromises(titles).then((resToSend) => {
+                resolve(resToSend)
+            })
+
+        }).catch(function (reason) {
+            // if any of the promises fails.
+            console.log('Something Went wrong')
+            reject("Something went wrong!")
+        })
+    })
+
+    return promise
+}
+
+// with promises
+const makeHtmlResponsePromises = (titles) => {
+
+    const promise = new RSVP.Promise(function (resolve, reject) {
+
+        var resToSend = '<html><head></head><body><h1> Following are the titles of given websites: </h1><ul>'
+
+        // iterate the array and make response 
+        const HtmlResponsePromises = titles.map(function (title) {
+            return resToSend = resToSend + '<li>' + title + '</li>'
+        });
+
+        // when all iterations are done successfully
+        RSVP.all(HtmlResponsePromises).then(function (resToSend) {
+            resToSend = resToSend + '</ul></body></html>'
+        });
+
+        // send the final response
+        resolve(resToSend)
+
+    })
+
+    return promise
+}
+
 module.exports = {
     getTitles,
     makeHtmlResponse,
     getTitlesAsync,
-    makeHtmlResponseAsync
+    makeHtmlResponseAsync,
+    getTitlesPromises,
+    makeHtmlResponsePromises
 }
